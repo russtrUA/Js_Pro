@@ -11,6 +11,7 @@ MatrixView.prototype.constructor = MatrixView;
 
 MatrixView.prototype.beforeRender = function () {
     this.matrixModel.subscribe('changeData', this.reRender, this);
+    this.matrixModel.subscribe('gameOver', this.gameOver, this);
 }
 
 MatrixView.prototype.render = function() {
@@ -40,4 +41,8 @@ MatrixView.prototype.beforeUpdate = function () {
 MatrixView.prototype.afterUpdate = function () {
     var newGameButton = document.getElementById('newGameBtn');
     newGameButton.addEventListener('click', this.controller.onClickNewGame.bind(this.controller));
+}
+
+MatrixView.prototype.gameOver = function () {
+    alert('Game over!');
 }
