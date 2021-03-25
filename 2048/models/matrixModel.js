@@ -1,5 +1,6 @@
 function MatrixModel() {
     BaseModel.call(this);
+    this.summaryModel = new SummaryModel();
     this.attributes = {
         size: {
             width: 4,
@@ -38,7 +39,9 @@ MatrixModel.prototype.displayActionResults = function (key) {
     }
     this.publish('changeData');
     if (this.isFinished() === true) {
-        console.log(this.emptyCoordinates, this.attributes.grid);
+        if (this.summaryModel.attributes.bestScore === this.summaryModel.attributes.totalScore) {
+            window.localStorage.bestScore = this.summaryModel.attributes.bestScore;
+        }
         this.publish('gameOver');
     }
 }
@@ -48,7 +51,7 @@ MatrixModel.prototype.isFinished = function () {
         var i, j, arr = this.attributes.grid;
         for (i = 0; i < arr.length; i += 1) {
             for (j = 0; j < arr[i].length - 1; j += 1) {
-                if (arr[j] === arr[j + 1]) {
+                if (arr[i][j] === arr[i][j + 1]) {
                     return false;
                 }
             }
@@ -65,8 +68,12 @@ MatrixModel.prototype.isFinished = function () {
 }
 
 MatrixModel.prototype.startNewGame = function () {
+    if (this.summaryModel.attributes.bestScore === this.summaryModel.attributes.totalScore) {
+        window.localStorage.bestScore = this.summaryModel.attributes.bestScore;
+    }
     this.init();
     this.publish('changeData');
+    this.summaryModel.publish('changeData');
 }
 MatrixModel.prototype.clearMatrix = function () {
     this.attributes.grid = [
@@ -81,6 +88,7 @@ MatrixModel.prototype.init = function () {
     this.clearMatrix();
     this.fillRandomValue();
     this.fillRandomValue();
+    this.summaryModel.init();
 }
 MatrixModel.prototype.fillEmptyCoordinates = function () {
     var i, j;
@@ -109,6 +117,9 @@ MatrixModel.prototype.fillRandomValue = function () {
 MatrixModel.prototype.calcAndShiftRight = function () {
     var firstJob = this.shiftRight();
     var secondJob = this.calcRight();
+    if (secondJob === true) {
+        this.summaryModel.publish('changeData');
+    }
     if (firstJob === true || secondJob === true) {
         this.fillRandomValue();
     }
@@ -121,12 +132,18 @@ MatrixModel.prototype.calcRight = function () {
         for (i = arr.length - 1; i > 0; i -= 1) {
             if (arr[i] !== '' && arr[i] === arr[i - 1]) {
                 arr[i] = (+arr[i] * 2).toString();
+                this.summaryModel.attributes.totalScore += +arr[i];
+                if (this.summaryModel.attributes.bestScore < this.summaryModel.attributes.totalScore) {
+                    this.summaryModel.attributes.bestScore = this.summaryModel.attributes.totalScore;
+                }
                 arr[i - 1] = '';
                 isWorked = true;
             }
         }
     }
-    this.shiftRight();
+    if (isWorked === true) {
+        this.shiftRight();
+    }
     return isWorked;
 }
 
@@ -153,6 +170,9 @@ MatrixModel.prototype.shiftRight = function () {
 MatrixModel.prototype.calcAndShiftLeft = function () {
     var firstJob = this.shiftLeft();
     var secondJob = this.calcLeft();
+    if (secondJob === true) {
+        this.summaryModel.publish('changeData');
+    }
     if (firstJob === true || secondJob === true) {
         this.fillRandomValue();
     }
@@ -165,12 +185,18 @@ MatrixModel.prototype.calcLeft = function () {
         for (i = 0; i < arr.length - 1; i += 1) {
             if (arr[i] !== '' && arr[i] === arr[i + 1]) {
                 arr[i] = (+arr[i] * 2).toString();
+                this.summaryModel.attributes.totalScore += +arr[i];
+                if (this.summaryModel.attributes.bestScore < this.summaryModel.attributes.totalScore) {
+                    this.summaryModel.attributes.bestScore = this.summaryModel.attributes.totalScore;
+                }
                 arr[i + 1] = '';
                 isWorked = true;
             }
         }
     }
-    this.shiftLeft();
+    if (isWorked === true) {
+        this.shiftLeft();
+    }
     return isWorked;
 }
 
@@ -197,6 +223,9 @@ MatrixModel.prototype.shiftLeft = function () {
 MatrixModel.prototype.calcAndShiftUp = function () {
     var firstJob = this.shiftUp();
     var secondJob = this.calcUp();
+    if (secondJob === true) {
+        this.summaryModel.publish('changeData');
+    }
     if (firstJob === true || secondJob === true) {
         this.fillRandomValue();
     }
@@ -209,13 +238,19 @@ MatrixModel.prototype.calcUp = function () {
         for (i = 0; i < arr.length - 1; i += 1) {
             if (arr[i] !== '' && arr[i] === arr[i + 1]) {
                 arr[i] = (+arr[i] * 2).toString();
+                this.summaryModel.attributes.totalScore += +arr[i];
+                if (this.summaryModel.attributes.bestScore < this.summaryModel.attributes.totalScore) {
+                    this.summaryModel.attributes.bestScore = this.summaryModel.attributes.totalScore;
+                }
                 arr[i + 1] = '';
                 isWorked = true;
             }
         }
         setColumn(this.attributes.grid, arr, col);
     }
-    this.shiftUp();
+    if (isWorked === true) {
+        this.shiftUp();
+    }
     return isWorked;
 }
 
@@ -243,6 +278,9 @@ MatrixModel.prototype.shiftUp = function () {
 MatrixModel.prototype.calcAndShiftDown = function () {
     var firstJob = this.shiftDown();
     var secondJob = this.calcDown();
+    if (secondJob === true) {
+        this.summaryModel.publish('changeData');
+    }
     if (firstJob === true || secondJob === true) {
         this.fillRandomValue();
     }
@@ -255,13 +293,19 @@ MatrixModel.prototype.calcDown = function () {
         for (i = arr.length - 1; i > 0; i -= 1) {
             if (arr[i] !== '' && arr[i] === arr[i - 1]) {
                 arr[i] = (+arr[i] * 2).toString();
+                this.summaryModel.attributes.totalScore += +arr[i];
+                if (this.summaryModel.attributes.bestScore < this.summaryModel.attributes.totalScore) {
+                    this.summaryModel.attributes.bestScore = this.summaryModel.attributes.totalScore;
+                }
                 arr[i - 1] = '';
                 isWorked = true;
             }
         }
         setColumn(this.attributes.grid, arr, col);
     }
-    this.shiftDown();
+    if (isWorked === true) {
+        this.shiftDown();
+    }
     return isWorked;
 }
 
